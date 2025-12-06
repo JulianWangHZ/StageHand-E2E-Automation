@@ -1,5 +1,7 @@
 # Stagehand E2E Automation Framework
 
+[English](README.md) | [繁體中文](README_zh_TW.md)
+
 A comprehensive end-to-end testing framework built with [Stagehand](https://github.com/browserbase/stagehand-python) and pytest for automated browser testing using natural language instructions.
 
 ## Overview
