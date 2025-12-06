@@ -3,7 +3,7 @@ Feature: Header functionality on homepage
   I want to interact with the header elements on the TransGlobal website
   So that I can navigate and access different sections of the website
 
-  @header @header_visibility
+  @header @header_visibility @smoke
   Scenario: All header elements are visible
     Given I navigate to the TransGlobal homepage
     When I look at the header
@@ -28,28 +28,28 @@ Feature: Header functionality on homepage
     And it should be clickable
 
 
-  @header @header_click_contact
+  @header @header_click_contact @smoke
   Scenario: Clicking CONTACT US menu item navigates to contact page
     Given I navigate to the TransGlobal homepage
     When I click the "CONTACT US" menu item in the header
     Then I should be navigated to the contact page
     And the URL should contain "contact"
 
-  @header @header_click_media
+  @header @header_click_media @smoke
   Scenario: Clicking MEDIA menu item navigates to media page
     Given I navigate to the TransGlobal homepage
     When I click the "MEDIA" menu item in the header
     Then I should be navigated to the media page
     And the URL should contain "media" or "transglobaltv"
 
-  @header @header_click_news
+  @header @header_click_news @smoke
   Scenario: Clicking NEWS menu item navigates to news page
     Given I navigate to the TransGlobal homepage
     When I click the "NEWS" menu item in the header
     Then I should be navigated to the news page
     And the URL should contain "news"
 
-  @header @header_click_events_dropdown
+  @header @header_click_events_dropdown @smoke
   Scenario: Clicking EVENTS dropdown item navigates to correct page
     Given I navigate to the TransGlobal homepage
     When I hover over "EVENTS" menu item
@@ -57,7 +57,7 @@ Feature: Header functionality on homepage
     Then I should be navigated to the webinar page
     And the URL should contain "seminars"
 
-  @header @header_click_about_us_dropdown
+  @header @header_click_about_us_dropdown @smoke
   Scenario: Clicking ABOUT US dropdown item navigates to correct page
     Given I navigate to the TransGlobal homepage
     When I hover over "ABOUT US" menu item
@@ -65,7 +65,7 @@ Feature: Header functionality on homepage
     Then I should be navigated to the about us page
     And the URL should contain "about-us"
 
-  @header @header_click_resource_dropdown
+  @header @header_click_resource_dropdown @smoke
   Scenario: Clicking Resource dropdown item navigates to correct page
     Given I navigate to the TransGlobal homepage
     When I hover over "Resource" menu item in the top menu
@@ -73,14 +73,14 @@ Feature: Header functionality on homepage
     Then I should be navigated to the agent portal page
     And the URL should contain "tgpt.transglobalus.com"
 
-  @header @header_click_language_dropdown
+  @header @header_click_language_dropdown @smoke
   Scenario: Clicking language selector shows language options
     Given I navigate to the TransGlobal homepage
     When I click the language selector in the header
     Then I should see the language dropdown menu
     And I should see language options in the dropdown
 
-  @header @header_services_dropdown
+  @header @header_services_dropdown @smoke
   Scenario: SERVICES menu has dropdown with submenu items
     Given I navigate to the TransGlobal homepage
     When I hover over "SERVICES" menu item

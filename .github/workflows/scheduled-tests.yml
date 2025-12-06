@@ -1,0 +1,84 @@
+name: Scheduled Test Execution
+
+on:
+  # schedule:
+  #   # Run tests daily at 2:00 AM UTC (Taiwan Standard Time 10:00 AM)
+  #   - cron: '0 2 * * *'
+  #   # Run tests every Monday at 9:00 AM UTC (Taiwan Standard Time 5:00 PM)
+  #   - cron: '0 9 * * 1'
+  workflow_dispatch:  # Allow manual trigger for scheduled workflow
+
+jobs:
+  scheduled-tests:
+    name: Run Scheduled Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    strategy:
+      matrix:
+        device: [desktop, mobile, ipad]
+      fail-fast: false
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Install Playwright Chromium
+        run: |
+          python -m playwright install chromium
+          python -m playwright install-deps chromium
+
+      - name: Run smoke tests
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: pytest --device=${{ matrix.device }} --headless -m smoke -n auto --stagehand-model=gpt-5-nano -v --tb=short
+
+      - name: Run critical tests
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: pytest --device=${{ matrix.device }} --headless -m critical -n auto --stagehand-model=gpt-5-nano -v --tb=short
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: scheduled-test-results-${{ matrix.device }}-${{ github.run_number }}
+          path: |
+            .pytest_cache/
+            htmlcov/
+          retention-days: 30
+
+      - name: Test Summary
+        if: always()
+        run: |
+          echo "## Scheduled Test Results - ${{ matrix.device }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- **Device**: ${{ matrix.device }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Trigger**: Scheduled" >> $GITHUB_STEP_SUMMARY
+          echo "- **Status**: ${{ job.status }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Run Time**: $(date -u +'%Y-%m-%d %H:%M:%S UTC')" >> $GITHUB_STEP_SUMMARY
+
+  notify-on-failure:
+    name: Notify on Failure
+    runs-on: ubuntu-latest
+    needs: scheduled-tests
+    if: failure()
+    steps:
+      - name: Check test results
+        run: |
+          echo "## ⚠️ Scheduled Tests Failed" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "One or more scheduled test runs have failed. Please check the test results." >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "View the [workflow run](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}) for details." >> $GITHUB_STEP_SUMMARY
+
