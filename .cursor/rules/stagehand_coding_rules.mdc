@@ -78,6 +78,59 @@ from config.devices import get_device_class
 - Use double quotes `"` for strings (preferred)
 - Use single quotes `'` only when the string contains double quotes
 
+### Code Formatting Tools
+
+#### Black (Required)
+- **All code MUST be formatted with Black** before committing
+- Black is enforced in CI/CD pipeline - failing Black checks will cause CI to fail
+- Run Black before committing:
+  ```bash
+  # Format all Python files
+  black .
+  
+  # Format specific files
+  black path/to/file.py
+  
+  # Check formatting without making changes
+  black --check .
+  ```
+- **Black Configuration**:
+  - Line length: 100 characters (default)
+  - Uses double quotes by default
+  - Automatically handles spacing, indentation, and line breaks
+- **Before Committing**:
+  - Always run `black .` to format all files
+  - Or use `black --check .` to verify formatting
+  - CI will fail if code is not properly formatted
+
+#### Import Sorting (isort)
+- Use `isort` to sort imports automatically
+- Run before committing:
+  ```bash
+  # Sort imports
+  isort .
+  
+  # Check import sorting
+  isort --check-only .
+  ```
+
+#### Linting (flake8)
+- Use `flake8` for code quality checks
+- Maximum line length: 100 characters
+- Maximum complexity: 10
+- Run before committing:
+  ```bash
+  flake8 . --max-line-length=100 --max-complexity=10
+  ```
+
+#### Pre-Commit Checklist
+Before committing code, ensure:
+1. ✅ Run `black .` to format code
+2. ✅ Run `isort .` to sort imports
+3. ✅ Run `flake8 .` to check for linting errors
+4. ✅ All tests pass locally
+5. ✅ Code follows project coding standards
+
 ---
 
 ## SOLID Principles
@@ -382,6 +435,9 @@ async def verify_navigation(stagehand_on_demand: Stagehand):
 ## Code Review Checklist
 
 ### Before Submitting Code
+- [ ] **Code formatted with Black** (`black .` has been run)
+- [ ] **Imports sorted with isort** (`isort .` has been run)
+- [ ] **No linting errors** (`flake8 .` passes)
 - [ ] Code follows PEP 8 style guide
 - [ ] Functions are small and focused (SRP)
 - [ ] No code duplication (DRY)
@@ -455,13 +511,15 @@ async def navigate_homepage(...):
 ## Summary
 
 1. **Follow PEP 8** for code style and formatting
-2. **Apply SOLID principles** for maintainable code structure
-3. **Use DRY principle** - extract common code to BaseActions
-4. **Use BaseActions** for standard Playwright operations
-5. **Use Stagehand's `act()`** for natural language actions
-6. **Verify page content**, not just URL changes
-7. **Write independent tests** that can run in any order
-8. **Use descriptive names** - no abbreviations or prefixes
-9. **Keep functions small** and focused on single responsibility
-10. **Document complex logic** with comments and docstrings
+2. **Use Black** to format all code before committing (required for CI)
+3. **Apply SOLID principles** for maintainable code structure
+4. **Use DRY principle** - extract common code to BaseActions
+5. **Use BaseActions** for standard Playwright operations
+6. **Use Stagehand's `act()`** for natural language actions
+7. **Verify page content**, not just URL changes
+8. **Write independent tests** that can run in any order
+9. **Use descriptive names** - no abbreviations or prefixes
+10. **Keep functions small** and focused on single responsibility
+11. **Document complex logic** with comments and docstrings
+12. **Run formatting tools** (Black, isort, flake8) before committing
 
