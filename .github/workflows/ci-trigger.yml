@@ -91,16 +91,6 @@ jobs:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         run: pytest --device=desktop --headless -m smoke -n 2 --stagehand-model=gpt-5-nano -v --tb=short --maxfail=5
 
-      - name: Upload test results
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: ci-test-results-desktop-${{ github.run_number }}
-          path: |
-            .pytest_cache/
-            htmlcov/
-          retention-days: 7
-
   test-mobile:
     name: Test on Mobile
     runs-on: ubuntu-latest
@@ -132,16 +122,6 @@ jobs:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         run: pytest --device=mobile --headless -m smoke -n 2 --stagehand-model=gpt-5-nano -v --tb=short --maxfail=5
 
-      - name: Upload test results
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: ci-test-results-mobile-${{ github.run_number }}
-          path: |
-            .pytest_cache/
-            htmlcov/
-          retention-days: 7
-
   test-ipad:
     name: Test on iPad
     runs-on: ubuntu-latest
@@ -172,16 +152,6 @@ jobs:
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         run: pytest --device=ipad --headless -m smoke -n 2 --stagehand-model=gpt-5-nano -v --tb=short --maxfail=5
-
-      - name: Upload test results
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: ci-test-results-ipad-${{ github.run_number }}
-          path: |
-            .pytest_cache/
-            htmlcov/
-          retention-days: 7
 
   test-summary:
     name: Test Summary

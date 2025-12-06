@@ -79,16 +79,6 @@ jobs:
             $([ "${{ inputs.parallel }}" == "true" ] && echo "-n ${{ inputs.workers }}") \
             --stagehand-model=${{ inputs.stagehand_model }}
 
-      - name: Upload test results
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: test-results-${{ inputs.device }}-${{ github.run_number }}
-          path: |
-            .pytest_cache/
-            htmlcov/
-          retention-days: 7
-
       - name: Summary
         if: always()
         run: |

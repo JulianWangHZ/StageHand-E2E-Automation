@@ -48,16 +48,6 @@ jobs:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         run: pytest --device=${{ matrix.device }} --headless -m critical -n auto --stagehand-model=gpt-5-nano -v --tb=short
 
-      - name: Upload test results
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: scheduled-test-results-${{ matrix.device }}-${{ github.run_number }}
-          path: |
-            .pytest_cache/
-            htmlcov/
-          retention-days: 30
-
       - name: Test Summary
         if: always()
         run: |
