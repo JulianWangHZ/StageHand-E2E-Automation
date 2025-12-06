@@ -25,13 +25,9 @@ warnings.filterwarnings("ignore", message=".*coroutine.*")
 def pytest_configure(config):
     """Configure pytest to filter warnings."""
     # Add additional warning filters for RuntimeWarning
+    config.addinivalue_line("filterwarnings", "ignore::RuntimeWarning")
     config.addinivalue_line(
-        "filterwarnings",
-        "ignore::RuntimeWarning"
-    )
-    config.addinivalue_line(
-        "filterwarnings",
-        "ignore:coroutine.*was never awaited:RuntimeWarning"
+        "filterwarnings", "ignore:coroutine.*was never awaited:RuntimeWarning"
     )
 
 
@@ -61,28 +57,30 @@ def pytest_addoption(parser):
 async def stagehand_on_demand(request) -> Generator[Stagehand, None, None]:
     device_type = request.config.getoption("--device", default="desktop")
     device_instance = get_device_class(device_type)
-    
+
     # Generate random port to avoid conflicts
     debug_port = 9222 + random.randint(0, 1000)
     user_data_dir = tempfile.mkdtemp(
         prefix=f"stagehand_test_{random.randint(1000, 9999)}_"
     )
-    
+
     # Handle parallel execution with pytest-xdist
-    worker_id = os.environ.get('PYTEST_XDIST_WORKER', 'main')
-    if worker_id != 'main':
+    worker_id = os.environ.get("PYTEST_XDIST_WORKER", "main")
+    if worker_id != "main":
         # Add longer delay for parallel execution
         delay = random.uniform(0.5, 2.0)
-        print(f"Worker {worker_id}: Delaying {delay:.2f} seconds to avoid resource conflicts")
+        print(
+            f"Worker {worker_id}: Delaying {delay:.2f} seconds to avoid resource conflicts"
+        )
         await asyncio.sleep(delay)
     else:
         await asyncio.sleep(random.uniform(0.1, 0.3))
-    
+
     # Stagehand configuration
     config = StagehandConfig(
         env="LOCAL",
         model_name=request.config.getoption("--stagehand-model", default="gpt-5-nano"),
-        model_api_key=os.getenv('OPENAI_API_KEY'),
+        model_api_key=os.getenv("OPENAI_API_KEY"),
         verbose=1,
         local_browser_launch_options={
             "headless": request.config.getoption("--headless", default=False),
@@ -118,13 +116,18 @@ async def stagehand_on_demand(request) -> Generator[Stagehand, None, None]:
                 "--disable-domain-reliability",
                 "--disable-features=TranslateUI",
                 "--disable-ipc-flooding-protection",
-                "--disable-blink-features=AutomationControlled"
-            ] + (["--headless"] if request.config.getoption("--headless", default=False) else [])
-        }
+                "--disable-blink-features=AutomationControlled",
+            ]
+            + (
+                ["--headless"]
+                if request.config.getoption("--headless", default=False)
+                else []
+            ),
+        },
     )
-    
+
     stagehand = Stagehand(config)
-    
+
     try:
         await stagehand.init()
         yield stagehand
@@ -142,4 +145,3 @@ async def stagehand_on_demand(request) -> Generator[Stagehand, None, None]:
             except OSError:
                 pass
             await asyncio.sleep(1)
-

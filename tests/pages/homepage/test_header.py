@@ -4,12 +4,13 @@ from stagehand import Stagehand
 from tests.pages.base.base_action import BaseActions
 
 
-scenarios('../../../features/homepage/header.feature')
+scenarios("../../../features/homepage/header.feature")
 
 
 # ============================================================================
 # Scenario : All header elements are visible @header @header_visibility
 # ============================================================================
+
 
 @given("I navigate to the TransGlobal homepage")
 async def navigate_homepage_visibility(stagehand_on_demand: Stagehand):
@@ -36,7 +37,9 @@ async def logo_visible_visibility(stagehand_on_demand: Stagehand):
 @then("the logo should link to the homepage URL")
 async def logo_links_homepage_visibility(stagehand_on_demand: Stagehand):
     page = stagehand_on_demand.page
-    logo_link = page.locator('a[href="https://www.transglobalus.com/"]').filter(has=page.locator('img'))
+    logo_link = page.locator('a[href="https://www.transglobalus.com/"]').filter(
+        has=page.locator("img")
+    )
     await logo_link.wait_for(state="visible", timeout=5000)
     href = await logo_link.get_attribute("href")
     assert href == "https://www.transglobalus.com/"
@@ -46,7 +49,7 @@ async def logo_links_homepage_visibility(stagehand_on_demand: Stagehand):
 async def see_menu_item_visibility(stagehand_on_demand: Stagehand, menu_item: str):
     page = stagehand_on_demand.page
     base_actions = BaseActions(page)
-    menu_locator = f'text={menu_item}'
+    menu_locator = f"text={menu_item}"
     is_visible = await base_actions.verify_element_visible(menu_locator)
     assert is_visible
 
@@ -55,7 +58,7 @@ async def see_menu_item_visibility(stagehand_on_demand: Stagehand, menu_item: st
 async def see_top_menu_item_visibility(stagehand_on_demand: Stagehand, menu_item: str):
     page = stagehand_on_demand.page
     base_actions = BaseActions(page)
-    menu_locator = f'text={menu_item}'
+    menu_locator = f"text={menu_item}"
     is_visible = await base_actions.verify_element_visible(menu_locator)
     assert is_visible
 
@@ -73,7 +76,7 @@ async def language_selector_visible_visibility(stagehand_on_demand: Stagehand):
 async def display_text_visibility(stagehand_on_demand: Stagehand, text: str):
     page = stagehand_on_demand.page
     base_actions = BaseActions(page)
-    text_locator = f'text={text}'
+    text_locator = f"text={text}"
     is_visible = await base_actions.verify_element_visible(text_locator)
     assert is_visible
 
@@ -154,6 +157,7 @@ async def phone_link_clickable_visibility(stagehand_on_demand: Stagehand):
 # Scenario : Clicking CONTACT US menu item navigates to contact page @header @header_click_contact
 # ============================================================================
 
+
 @given("I navigate to the TransGlobal homepage")
 async def navigate_homepage_contact(stagehand_on_demand: Stagehand):
     page = stagehand_on_demand.page
@@ -194,6 +198,7 @@ async def url_contains_contact(stagehand_on_demand: Stagehand, text: str):
 # ============================================================================
 # Scenario : Clicking MEDIA menu item navigates to media page @header @header_click_media
 # ============================================================================
+
 
 @given("I navigate to the TransGlobal homepage")
 async def navigate_homepage_media(stagehand_on_demand: Stagehand):
@@ -236,6 +241,7 @@ async def url_contains_media_or(stagehand_on_demand: Stagehand, text1: str, text
 # Scenario : Clicking NEWS menu item navigates to news page @header @header_click_news
 # ============================================================================
 
+
 @given("I navigate to the TransGlobal homepage")
 async def navigate_homepage_news(stagehand_on_demand: Stagehand):
     page = stagehand_on_demand.page
@@ -276,6 +282,7 @@ async def url_contains_news(stagehand_on_demand: Stagehand, text: str):
 # ============================================================================
 # Scenario : Clicking EVENTS dropdown item navigates to correct page @header @header_click_events_dropdown
 # ============================================================================
+
 
 @given("I navigate to the TransGlobal homepage")
 async def navigate_homepage_events(stagehand_on_demand: Stagehand):
@@ -325,6 +332,7 @@ async def url_contains_seminars(stagehand_on_demand: Stagehand, text: str):
 # Scenario : Clicking ABOUT US dropdown item navigates to correct page @header @header_click_about_us_dropdown
 # ============================================================================
 
+
 @given("I navigate to the TransGlobal homepage")
 async def navigate_homepage_about_us(stagehand_on_demand: Stagehand):
     page = stagehand_on_demand.page
@@ -373,6 +381,7 @@ async def url_contains_about_us(stagehand_on_demand: Stagehand, text: str):
 # ============================================================================
 # Scenario : Clicking Resource dropdown item navigates to correct page @header @header_click_resource_dropdown
 # ============================================================================
+
 
 @given("I navigate to the TransGlobal homepage")
 async def navigate_homepage_resource(stagehand_on_demand: Stagehand):
@@ -425,6 +434,7 @@ async def url_contains_tgpt(stagehand_on_demand: Stagehand, text: str):
 # Scenario : Clicking language selector shows language options @header @header_click_language_dropdown
 # ============================================================================
 
+
 @given("I navigate to the TransGlobal homepage")
 async def navigate_homepage_language(stagehand_on_demand: Stagehand):
     page = stagehand_on_demand.page
@@ -445,20 +455,26 @@ async def see_language_dropdown(stagehand_on_demand: Stagehand):
     page = stagehand_on_demand.page
     await page.wait_for_timeout(500)
     dropdown = page.locator('#pll_switcher, .pll-switcher, [class*="language"]')
-    assert await dropdown.count() > 0 or await page.locator('text=中文, text=English').count() > 0
+    assert (
+        await dropdown.count() > 0
+        or await page.locator("text=中文, text=English").count() > 0
+    )
 
 
 @then("I should see language options in the dropdown")
 async def see_language_options(stagehand_on_demand: Stagehand):
     page = stagehand_on_demand.page
     await page.wait_for_timeout(500)
-    language_options = page.locator('text=中文, text=English, text=繁體中文, text=简体中文')
+    language_options = page.locator(
+        "text=中文, text=English, text=繁體中文, text=简体中文"
+    )
     assert await language_options.count() > 0
 
 
 # ============================================================================
-# Scenario : SERVICES menu has dropdown with submenu items @header @header_services_dropdown  
+# Scenario : SERVICES menu has dropdown with submenu items @header @header_services_dropdown
 # ============================================================================
+
 
 @given("I navigate to the TransGlobal homepage")
 async def navigate_homepage_services(stagehand_on_demand: Stagehand):
@@ -487,6 +503,6 @@ async def see_dropdown_menu_services(stagehand_on_demand: Stagehand):
 async def see_item_in_dropdown_services(stagehand_on_demand: Stagehand, item: str):
     page = stagehand_on_demand.page
     await page.wait_for_timeout(500)
-    dropdown_item = page.locator(f'text={item}').first()
+    dropdown_item = page.locator(f"text={item}").first()
     await dropdown_item.wait_for(state="visible", timeout=5000)
     assert await dropdown_item.is_visible()
