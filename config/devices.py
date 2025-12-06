@@ -66,7 +66,6 @@ def get_device_class(device_type: str) -> Device:
     device_map = {
         "mobile": Mobile,
         "ipad": Ipad,
-        "tablet": Ipad,  # Backward compatibility
         "desktop": Desktop,
     }
     
@@ -75,7 +74,7 @@ def get_device_class(device_type: str) -> Device:
     if device_class is None:
         raise ValueError(
             f"Unsupported device type: {device_type}. "
-            f"Supported types: {', '.join(['mobile', 'ipad', 'tablet', 'desktop'])}"
+            f"Supported types: {', '.join(['mobile', 'ipad', 'desktop'])}"
         )
     
     return device_class()

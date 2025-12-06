@@ -3,6 +3,7 @@ import os
 import random
 import shutil
 import tempfile
+import warnings
 from typing import Generator
 
 import pytest
@@ -14,14 +15,33 @@ from config.devices import get_device_class
 # Load environment variables from .env file
 load_dotenv()
 
+# Filter RuntimeWarning about coroutines not being awaited (pytest-bdd collection phase)
+# This happens when pytest-bdd checks async step definitions during collection
+warnings.filterwarnings("ignore", category=RuntimeWarning)
+warnings.filterwarnings("ignore", message=".*coroutine.*was never awaited.*")
+warnings.filterwarnings("ignore", message=".*coroutine.*")
+
+
+def pytest_configure(config):
+    """Configure pytest to filter warnings."""
+    # Add additional warning filters for RuntimeWarning
+    config.addinivalue_line(
+        "filterwarnings",
+        "ignore::RuntimeWarning"
+    )
+    config.addinivalue_line(
+        "filterwarnings",
+        "ignore:coroutine.*was never awaited:RuntimeWarning"
+    )
+
 
 def pytest_addoption(parser):
     parser.addoption(
         "--device",
         action="store",
         default="desktop",
-        choices=["mobile", "ipad", "tablet", "desktop"],
-        help="Device type to use for tests (mobile, ipad, tablet, desktop). 'tablet' is an alias for 'ipad'",
+        choices=["mobile", "ipad", "desktop"],
+        help="Device type to use for tests (mobile, ipad, desktop)",
     )
     parser.addoption(
         "--headless",

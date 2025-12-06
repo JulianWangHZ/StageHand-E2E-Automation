@@ -126,8 +126,6 @@ The framework supports three device configurations:
 - **ipad**: 1024x1366 (iPad Pro 12.9" size)
 - **desktop**: 1920x1080 (default)
 
-**Note**: The `tablet` option is supported as an alias for `ipad` for backward compatibility.
-
 ### Browser Support
 
 > ⚠️ **BROWSER COMPATIBILITY WARNING**
@@ -187,12 +185,6 @@ Run tests on iPad:
 
 ```bash
 pytest --device=ipad
-```
-
-Or use the backward-compatible `tablet` option:
-
-```bash
-pytest --device=tablet
 ```
 
 Run tests on desktop (default):
