@@ -1,0 +1,467 @@
+# StageHand E2E Automation - Coding Rules
+
+## Table of Contents
+1. [General Principles](#general-principles)
+2. [PEP 8 Style Guide](#pep-8-style-guide)
+3. [SOLID Principles](#solid-principles)
+4. [DRY Principle](#dry-principle)
+5. [Project-Specific Rules](#project-specific-rules)
+6. [Test Organization](#test-organization)
+7. [Code Quality Standards](#code-quality-standards)
+
+---
+
+## General Principles
+
+### Code Quality
+- Write clean, readable, and maintainable code
+- Follow Python best practices and conventions
+- Prioritize clarity over cleverness
+- Write self-documenting code with meaningful names
+- Keep functions small and focused on a single responsibility
+
+### Documentation
+- Use docstrings for all classes, functions, and modules
+- Document complex logic and business rules
+- Keep comments up-to-date with code changes
+- Use type hints for better code clarity and IDE support
+
+---
+
+## PEP 8 Style Guide
+
+### Naming Conventions
+- **Modules**: `snake_case` (e.g., `test_header.py`, `base_action.py`)
+- **Classes**: `PascalCase` (e.g., `BaseActions`, `Device`, `Mobile`)
+- **Functions/Methods**: `snake_case` (e.g., `navigate_homepage`, `wait_for_page_loaded`)
+- **Constants**: `UPPER_SNAKE_CASE` (e.g., `FEATURE_PATH`, `DEFAULT_TIMEOUT`)
+- **Private methods**: Prefix with single underscore `_` (e.g., `_resolve_locator`)
+- **Protected methods**: Prefix with single underscore `_` (e.g., `_internal_method`)
+
+### Code Formatting
+- **Line length**: Maximum 100 characters (soft limit), 120 characters (hard limit)
+- **Indentation**: Use 4 spaces (never tabs)
+- **Blank lines**:
+  - 2 blank lines between top-level definitions (classes, functions)
+  - 1 blank line between methods in a class
+  - 1 blank line between logical sections within a function
+- **Imports**: 
+  - Group imports: standard library, third-party, local
+  - One import per line
+  - Sort imports alphabetically within each group
+  - Use absolute imports (preferred) or explicit relative imports
+
+### Example:
+```python
+# Standard library
+import asyncio
+import os
+from typing import Union
+
+# Third-party
+import pytest
+from playwright.async_api import Page
+from stagehand import Stagehand
+
+# Local
+from tests.pages.base.base_action import BaseActions
+from config.devices import get_device_class
+```
+
+### Spacing
+- Use spaces around operators: `x = y + z`
+- Use spaces after commas: `func(a, b, c)`
+- No spaces inside brackets: `list[0]`, not `list[ 0 ]`
+- Use spaces around `=` in function arguments: `def func(a=1, b=2)`
+
+### Quotes
+- Use double quotes `"` for strings (preferred)
+- Use single quotes `'` only when the string contains double quotes
+
+---
+
+## SOLID Principles
+
+### Single Responsibility Principle (SRP)
+- Each class/function should have one reason to change
+- **Example**: `BaseActions` handles only Playwright operations, not business logic
+- **Example**: Device classes (`Mobile`, `Ipad`, `Desktop`) only define device configurations
+
+### Open/Closed Principle (OCP)
+- Open for extension, closed for modification
+- Use inheritance and composition to extend functionality
+- **Example**: Add new device types by creating new classes, not modifying existing ones
+
+### Liskov Substitution Principle (LSP)
+- Subtypes must be substitutable for their base types
+- **Example**: All device classes (`Mobile`, `Ipad`, `Desktop`) can be used wherever `Device` is expected
+
+### Interface Segregation Principle (ISP)
+- Clients should not depend on methods they don't use
+- Keep interfaces focused and minimal
+- **Example**: `BaseActions` provides focused methods for specific operations
+
+### Dependency Inversion Principle (DIP)
+- Depend on abstractions, not concretions
+- Use dependency injection
+- **Example**: Tests depend on `Stagehand` interface, not specific implementations
+
+---
+
+## DRY Principle
+
+### Don't Repeat Yourself
+- Extract common functionality into reusable functions/classes
+- Use `BaseActions` for common Playwright operations
+- Create helper functions for repeated patterns
+- Use fixtures for shared test setup
+
+### Code Reuse Examples
+- **Good**: Use `BaseActions.wait_for_page_loaded()` instead of repeating `wait_for_load_state()` calls
+- **Good**: Use `BaseActions.verify_element_visible()` for all visibility checks
+- **Bad**: Repeating the same Playwright locator logic in multiple places
+
+### When to Extract
+- If code is repeated 3+ times, extract to a function/class
+- If logic is complex and used in multiple places, create a helper
+- If setup/teardown is shared, use pytest fixtures
+
+---
+
+## Project-Specific Rules
+
+### Pytest-BDD Structure
+
+#### Feature Files
+- Location: `features/{page_name}/{feature_name}.feature`
+- Use Gherkin syntax (Given-When-Then)
+- Use descriptive scenario names
+- Tag scenarios appropriately (e.g., `@header`, `@header_visibility`)
+
+#### Test Files
+- Location: `tests/pages/{page_name}/test_{feature_name}.py`
+- Use `scenarios()` function at the top to load feature files
+- Follow feature file order: Given → When → Then → And
+- Write all steps for each scenario together (don't split by Given/When/Then)
+
+#### Example Structure:
+```python
+import pytest
+from pytest_bdd import scenarios, given, when, then, parsers
+from stagehand import Stagehand
+from tests.pages.base.base_action import BaseActions
+
+scenarios('../../../features/homepage/header.feature')
+
+# Scenario 1: All header elements are visible
+@given("I navigate to the TransGlobal homepage")
+async def navigate_homepage_visibility(stagehand_on_demand: Stagehand):
+    page = stagehand_on_demand.page
+    base_actions = BaseActions(page)
+    await base_actions.open_url("https://www.transglobalus.com/")
+    await base_actions.wait_for_page_loaded()
+
+@when("I look at the header")
+async def look_at_header_visibility(stagehand_on_demand: Stagehand):
+    await stagehand_on_demand.page.wait_for_timeout(500)
+
+@then("the TransGlobal logo should be visible")
+async def logo_visible_visibility(stagehand_on_demand: Stagehand):
+    page = stagehand_on_demand.page
+    base_actions = BaseActions(page)
+    is_visible = await base_actions.verify_element_visible('a[href*="transglobalus.com"]')
+    assert is_visible
+```
+
+### Stagehand Usage
+
+#### Prefer BaseActions for Common Operations
+- Use `BaseActions` for standard Playwright operations (click, wait, verify)
+- Use `page.act()` for natural language actions that require AI interpretation
+- Use `page.observe()` only when necessary (preview actions before execution)
+- Use `page.extract()` only when structured data extraction is needed
+
+#### Action Guidelines
+- Be specific in natural language instructions
+- **Good**: `await page.act('click the "CONTACT US" menu item in the header')`
+- **Bad**: `await page.act('click button')`
+- Use descriptive selectors when possible
+
+#### Verification Guidelines
+- Use `BaseActions` methods for element verification
+- Use Playwright locators directly for complex queries
+- Always verify page content is loaded, not just URL changes
+
+### BaseActions Usage
+
+#### When to Use BaseActions
+- Page navigation: `open_url()`, `wait_for_page_loaded()`
+- Element verification: `verify_element_visible()`, `verify_element_text()`
+- Element interaction: `click_element()`, `send_keys_to_element()`
+- Waiting: `wait_for_element_visible()`, `wait_for_element_present()`
+
+#### When NOT to Use BaseActions
+- Natural language actions (use `page.act()`)
+- Complex data extraction (use `page.extract()`)
+- Custom Playwright operations not covered by BaseActions
+
+### Async/Await Patterns
+- All test functions must be `async def`
+- Always `await` async operations
+- Use `await` for all Playwright and BaseActions methods
+- Use `await asyncio.sleep()` instead of `time.sleep()` in async code
+
+### Error Handling
+- Use try-except blocks for expected failures
+- Let unexpected errors propagate (pytest will handle them)
+- Provide meaningful error messages
+- Log errors appropriately
+
+---
+
+## Test Organization
+
+### File Structure
+```
+tests/
+  pages/
+    base/
+      base_action.py          # Base actions class
+    homepage/
+      test_header.py          # Header feature tests
+    {page_name}/
+      test_{feature}.py       # Feature-specific tests
+```
+
+### Naming Conventions
+- Test files: `test_{feature_name}.py`
+- Feature files: `{feature_name}.feature`
+- Step definition functions: Descriptive names matching the step text
+- **Do NOT** prefix with `given_`, `when_`, `then_` (too verbose)
+
+### Scenario Organization
+- Group related scenarios together
+- Write all steps for a scenario consecutively
+- Use comments to separate scenarios: `# Scenario : Description @tags`
+
+### Tags (Markers)
+- Use scenario-specific tags (e.g., `@header_visibility`, `@header_click_contact`)
+- Use page-level tags (e.g., `@homepage`, `@header`)
+- **Do NOT** use generic tags like `@smoke`, `@regression` unless specifically needed
+- Tags should reflect the scenario content and page context
+
+---
+
+## Code Quality Standards
+
+### Function Design
+- Keep functions focused on a single task
+- Maximum 50 lines per function (prefer shorter)
+- Use descriptive function names
+- Accept only necessary parameters
+- Return meaningful values
+
+### Variable Naming
+- Use descriptive names: `base_actions` not `ba`
+- Use full words: `page` not `p`, `menu_item` not `mi`
+- Boolean variables: Use `is_`, `has_`, `should_` prefix (e.g., `is_visible`, `has_content`)
+
+### Comments
+- Write self-documenting code (prefer code clarity over comments)
+- Comment "why", not "what"
+- Remove commented-out code
+- Update comments when code changes
+
+### Type Hints
+- Use type hints for function parameters and return values
+- Use `Union` for multiple types
+- Use `Optional` for nullable values
+- Example:
+```python
+async def verify_element_visible(
+    stagehand_on_demand: Stagehand, 
+    locator: Union[Locator, str]
+) -> bool:
+    ...
+```
+
+### Imports
+- Use absolute imports: `from tests.pages.base.base_action import BaseActions`
+- Group imports: standard library, third-party, local
+- One import per line
+- Sort alphabetically within groups
+
+### Constants
+- Define constants at module level
+- Use `UPPER_SNAKE_CASE` for constants
+- Example: `FEATURE_PATH = "features/homepage/header.feature"`
+
+### Magic Numbers
+- Avoid magic numbers, use named constants
+- **Bad**: `await page.wait_for_timeout(2000)`
+- **Better**: `PAGE_LOAD_TIMEOUT = 2000` then `await page.wait_for_timeout(PAGE_LOAD_TIMEOUT)`
+- Or use descriptive variable: `page_load_delay = 2000`
+
+---
+
+## Testing Best Practices
+
+### Test Independence
+- Each test should be able to run independently
+- Don't rely on test execution order
+- Navigate to pages in each test (don't assume previous state)
+
+### Test Data
+- Use realistic test data
+- Avoid hardcoded values when possible
+- Use fixtures for shared test data
+
+### Assertions
+- Use descriptive assertion messages
+- One assertion per test concept
+- Use `assert` with meaningful messages: `assert condition, "Error message"`
+
+### Waiting Strategies
+- Always wait for page loads: `await base_actions.wait_for_page_loaded()`
+- Wait for elements before interaction
+- Use appropriate timeouts (not too short, not too long)
+- Verify page content is loaded, not just URL changes
+
+### Page Object Pattern
+- Use `BaseActions` as the foundation
+- Create page-specific action classes when needed
+- Keep page objects focused on page interactions
+
+---
+
+## Common Patterns
+
+### Navigation Pattern
+```python
+@given("I navigate to the TransGlobal homepage")
+async def navigate_homepage(stagehand_on_demand: Stagehand):
+    page = stagehand_on_demand.page
+    base_actions = BaseActions(page)
+    await base_actions.open_url("https://www.transglobalus.com/")
+    await base_actions.wait_for_page_loaded()
+```
+
+### Element Verification Pattern
+```python
+@then("the element should be visible")
+async def verify_element_visible(stagehand_on_demand: Stagehand):
+    page = stagehand_on_demand.page
+    base_actions = BaseActions(page)
+    is_visible = await base_actions.verify_element_visible('selector')
+    assert is_visible
+```
+
+### Click and Navigate Pattern
+```python
+@when("I click the menu item")
+async def click_menu_item(stagehand_on_demand: Stagehand, menu_item: str):
+    page = stagehand_on_demand.page
+    await page.act(f'click the "{menu_item}" in the header')
+    await page.wait_for_load_state("networkidle")
+    await page.wait_for_timeout(2000)  # Wait for content to load
+
+@then("I should be navigated to the page")
+async def verify_navigation(stagehand_on_demand: Stagehand):
+    page = stagehand_on_demand.page
+    base_actions = BaseActions(page)
+    await base_actions.wait_for_page_loaded()
+    current_url = page.url
+    assert "expected-path" in current_url.lower()
+    # Verify page content is loaded
+    body_text = await base_actions.get_element_text("body")
+    assert len(body_text.strip()) > 0, "Page appears to be blank"
+```
+
+---
+
+## Code Review Checklist
+
+### Before Submitting Code
+- [ ] Code follows PEP 8 style guide
+- [ ] Functions are small and focused (SRP)
+- [ ] No code duplication (DRY)
+- [ ] Type hints are used where appropriate
+- [ ] Docstrings are present for public functions
+- [ ] Tests are independent and can run in any order
+- [ ] BaseActions is used for common operations
+- [ ] Page content is verified, not just URL changes
+- [ ] Appropriate waits are in place
+- [ ] Error handling is appropriate
+- [ ] Imports are organized and sorted
+- [ ] No magic numbers (use constants or variables)
+- [ ] Variable names are descriptive
+- [ ] Comments explain "why", not "what"
+
+---
+
+## Anti-Patterns to Avoid
+
+### ❌ Don't Do This
+```python
+# Magic numbers
+await page.wait_for_timeout(2000)
+
+# Generic names
+def test1(stagehand):
+    pass
+
+# Code duplication
+await page.locator('selector').wait_for(state="visible")
+await page.locator('selector').is_visible()
+# Repeated in multiple places
+
+# No page content verification
+current_url = page.url
+assert "contact" in current_url.lower()
+# Missing: verify page actually loaded
+
+# Prefixing with given/when/then
+async def given_navigate_homepage(...):
+    pass
+```
+
+### ✅ Do This Instead
+```python
+# Named constant or variable
+PAGE_LOAD_DELAY = 2000
+await page.wait_for_timeout(PAGE_LOAD_DELAY)
+
+# Descriptive names
+async def test_header_logo_visibility(stagehand):
+    pass
+
+# Use BaseActions
+base_actions = BaseActions(page)
+is_visible = await base_actions.verify_element_visible('selector')
+
+# Verify page content
+base_actions = BaseActions(page)
+await base_actions.wait_for_page_loaded()
+body_text = await base_actions.get_element_text("body")
+assert len(body_text.strip()) > 0, "Page appears to be blank"
+
+# No prefix
+async def navigate_homepage(...):
+    pass
+```
+
+---
+
+## Summary
+
+1. **Follow PEP 8** for code style and formatting
+2. **Apply SOLID principles** for maintainable code structure
+3. **Use DRY principle** - extract common code to BaseActions
+4. **Use BaseActions** for standard Playwright operations
+5. **Use Stagehand's `act()`** for natural language actions
+6. **Verify page content**, not just URL changes
+7. **Write independent tests** that can run in any order
+8. **Use descriptive names** - no abbreviations or prefixes
+9. **Keep functions small** and focused on single responsibility
+10. **Document complex logic** with comments and docstrings
+

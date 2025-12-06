@@ -24,6 +24,7 @@ This framework enables reliable browser automation by combining the power of AI-
 - [Configuration](#configuration)
 - [Running Tests](#running-tests)
 - [Best Practices](#best-practices)
+- [Coding Standards](#coding-standards)
 - [Troubleshooting](#troubleshooting)
 
 ## Prerequisites
@@ -369,6 +370,235 @@ async def test_b(stagehand_on_demand):
     await stagehand_on_demand.page.goto("https://www.transglobalus.com/")
     # test code
 ```
+
+### 8. Use BaseActions for Common Operations
+
+Always use `BaseActions` for standard Playwright operations to maintain consistency and reusability:
+
+```python
+from tests.pages.base.base_action import BaseActions
+
+base_actions = BaseActions(page)
+await base_actions.open_url("https://www.transglobalus.com/")
+await base_actions.wait_for_page_loaded()
+is_visible = await base_actions.verify_element_visible('selector')
+```
+
+### 9. Verify Page Content, Not Just URLs
+
+Always verify that page content has actually loaded, not just that the URL changed:
+
+```python
+# Good - verifies content is loaded
+await base_actions.wait_for_page_loaded()
+current_url = page.url
+assert "contact" in current_url.lower()
+body_text = await base_actions.get_element_text("body")
+assert len(body_text.strip()) > 0, "Page appears to be blank"
+
+# Bad - only checks URL
+current_url = page.url
+assert "contact" in current_url.lower()
+```
+
+## Coding Standards
+
+This project follows Python best practices and coding principles. For detailed coding rules, see [`.cursor/rules/stagehand_coding_rules.mdc`](.cursor/rules/stagehand_coding_rules.mdc).
+
+### PEP 8 Style Guide
+
+- **Naming Conventions**:
+  - Modules: `snake_case` (e.g., `test_header.py`)
+  - Classes: `PascalCase` (e.g., `BaseActions`, `Device`)
+  - Functions/Methods: `snake_case` (e.g., `navigate_homepage`)
+  - Constants: `UPPER_SNAKE_CASE` (e.g., `DEFAULT_TIMEOUT`)
+  - Private methods: Prefix with `_` (e.g., `_resolve_locator`)
+
+- **Code Formatting**:
+  - Maximum 100 characters per line (soft limit)
+  - Use 4 spaces for indentation (never tabs)
+  - 2 blank lines between top-level definitions
+  - 1 blank line between methods
+  - Group imports: standard library, third-party, local
+
+- **Import Organization**:
+```python
+# Standard library
+import asyncio
+from typing import Union
+
+# Third-party
+import pytest
+from playwright.async_api import Page
+from stagehand import Stagehand
+
+# Local
+from tests.pages.base.base_action import BaseActions
+from config.devices import get_device_class
+```
+
+### SOLID Principles
+
+- **Single Responsibility**: Each class/function should have one reason to change
+- **Open/Closed**: Open for extension, closed for modification
+- **Liskov Substitution**: Subtypes must be substitutable for their base types
+- **Interface Segregation**: Keep interfaces focused and minimal
+- **Dependency Inversion**: Depend on abstractions, not concretions
+
+### DRY Principle
+
+- Extract common functionality into reusable functions/classes
+- Use `BaseActions` for common Playwright operations
+- Create helper functions for repeated patterns
+- Use fixtures for shared test setup
+
+### Pytest-BDD Structure
+
+#### Feature Files
+- Location: `features/{page_name}/{feature_name}.feature`
+- Use Gherkin syntax (Given-When-Then)
+- Tag scenarios appropriately (e.g., `@homepage`, `@header_visibility`)
+
+#### Test Files
+- Location: `tests/pages/{page_name}/test_{feature_name}.py`
+- Use `scenarios()` function at the top to load feature files
+- Write all steps for each scenario together
+- **Do NOT** prefix step definition functions with `given_`, `when_`, `then_`
+
+#### Example Structure:
+```python
+import pytest
+from pytest_bdd import scenarios, given, when, then, parsers
+from stagehand import Stagehand
+from tests.pages.base.base_action import BaseActions
+
+scenarios('../../../features/homepage/header.feature')
+
+@given("I navigate to the TransGlobal homepage")
+async def navigate_homepage_visibility(stagehand_on_demand: Stagehand):
+    page = stagehand_on_demand.page
+    base_actions = BaseActions(page)
+    await base_actions.open_url("https://www.transglobalus.com/")
+    await base_actions.wait_for_page_loaded()
+
+@when("I look at the header")
+async def look_at_header_visibility(stagehand_on_demand: Stagehand):
+    await stagehand_on_demand.page.wait_for_timeout(500)
+
+@then("the TransGlobal logo should be visible")
+async def logo_visible_visibility(stagehand_on_demand: Stagehand):
+    page = stagehand_on_demand.page
+    base_actions = BaseActions(page)
+    is_visible = await base_actions.verify_element_visible('a[href*="transglobalus.com"]')
+    assert is_visible
+```
+
+### Stagehand Usage Guidelines
+
+- **Use BaseActions** for standard Playwright operations (click, wait, verify)
+- **Use `page.act()`** for natural language actions that require AI interpretation
+- **Use `page.observe()`** only when necessary (preview actions before execution)
+- **Use `page.extract()`** only when structured data extraction is needed
+- Be specific in natural language instructions
+
+### Test Organization
+
+- **File Structure**: Organize tests by page/feature (e.g., `tests/pages/homepage/test_header.py`)
+- **Naming**: Test files use `test_{feature_name}.py`, feature files use `{feature_name}.feature`
+- **Tags**: Use scenario-specific tags (e.g., `@header_visibility`, `@header_click_contact`) and page-level tags (e.g., `@homepage`)
+- **Independence**: Each test should be able to run independently
+
+### Code Quality Standards
+
+- **Functions**: Keep functions small and focused (max 50 lines, prefer shorter)
+- **Variables**: Use descriptive names, avoid abbreviations
+- **Type Hints**: Use type hints for function parameters and return values
+- **Comments**: Comment "why", not "what"
+- **Constants**: Define constants at module level, avoid magic numbers
+
+### Common Patterns
+
+#### Navigation Pattern
+```python
+@given("I navigate to the TransGlobal homepage")
+async def navigate_homepage(stagehand_on_demand: Stagehand):
+    page = stagehand_on_demand.page
+    base_actions = BaseActions(page)
+    await base_actions.open_url("https://www.transglobalus.com/")
+    await base_actions.wait_for_page_loaded()
+```
+
+#### Click and Navigate Pattern
+```python
+@when("I click the menu item")
+async def click_menu_item(stagehand_on_demand: Stagehand, menu_item: str):
+    page = stagehand_on_demand.page
+    await page.act(f'click the "{menu_item}" in the header')
+    await page.wait_for_load_state("networkidle")
+    await page.wait_for_timeout(2000)  # Wait for content to load
+
+@then("I should be navigated to the page")
+async def verify_navigation(stagehand_on_demand: Stagehand):
+    page = stagehand_on_demand.page
+    base_actions = BaseActions(page)
+    await base_actions.wait_for_page_loaded()
+    current_url = page.url
+    assert "expected-path" in current_url.lower()
+    # Verify page content is loaded
+    body_text = await base_actions.get_element_text("body")
+    assert len(body_text.strip()) > 0, "Page appears to be blank"
+```
+
+### Anti-Patterns to Avoid
+
+❌ **Don't Do This**:
+```python
+# Magic numbers
+await page.wait_for_timeout(2000)
+
+# Generic names
+def test1(stagehand):
+    pass
+
+# Code duplication
+await page.locator('selector').wait_for(state="visible")
+# Repeated in multiple places
+
+# No page content verification
+current_url = page.url
+assert "contact" in current_url.lower()
+
+# Prefixing with given/when/then
+async def given_navigate_homepage(...):
+    pass
+```
+
+✅ **Do This Instead**:
+```python
+# Named constant or variable
+PAGE_LOAD_DELAY = 2000
+await page.wait_for_timeout(PAGE_LOAD_DELAY)
+
+# Descriptive names
+async def test_header_logo_visibility(stagehand):
+    pass
+
+# Use BaseActions
+base_actions = BaseActions(page)
+is_visible = await base_actions.verify_element_visible('selector')
+
+# Verify page content
+base_actions = BaseActions(page)
+await base_actions.wait_for_page_loaded()
+body_text = await base_actions.get_element_text("body")
+assert len(body_text.strip()) > 0, "Page appears to be blank"
+
+# No prefix
+async def navigate_homepage(...):
+    pass
+```
+
+For complete coding rules and detailed guidelines, refer to [`.cursor/rules/stagehand_coding_rules.mdc`](.cursor/rules/stagehand_coding_rules.mdc).
 
 ## Troubleshooting
 
