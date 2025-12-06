@@ -73,11 +73,13 @@ jobs:
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         run: |
-          pytest --device=${{ inputs.device }} \
-            $([ "${{ inputs.headless }}" == "true" ] && echo "--headless") \
-            $([ -n "${{ inputs.tags }}" ] && echo "-m '${{ inputs.tags }}'") \
-            $([ "${{ inputs.parallel }}" == "true" ] && echo "-n ${{ inputs.workers }}") \
-            --stagehand-model=${{ inputs.stagehand_model }}
+          CMD="pytest --device=${{ inputs.device }}"
+          [ "${{ inputs.headless }}" == "true" ] && CMD="$CMD --headless"
+          [ -n "${{ inputs.tags }}" ] && CMD="$CMD -m \"${{ inputs.tags }}\""
+          [ "${{ inputs.parallel }}" == "true" ] && CMD="$CMD -n ${{ inputs.workers }} --dist=loadscope"
+          CMD="$CMD --stagehand-model=${{ inputs.stagehand_model }} -v"
+          echo "Running: $CMD"
+          eval $CMD
 
       - name: Summary
         if: always()
