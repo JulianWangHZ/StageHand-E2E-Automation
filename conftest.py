@@ -156,19 +156,12 @@ def pytest_sessionfinish(session, exitstatus):
     if worker_id == "main":
         try:
             # Use shorter timeout and ignore errors to avoid blocking
-            subprocess.run(
-                ["pkill", "-f", "stagehand_ctx"], check=False, timeout=2
-            )
+            subprocess.run(["pkill", "-f", "stagehand_ctx"], check=False, timeout=2)
             subprocess.run(
                 ["pkill", "-f", "chromium.*stagehand"], check=False, timeout=2
             )
-            subprocess.run(
-                ["pkill", "-f", "chrome.*stagehand"], check=False, timeout=2
-            )
-            subprocess.run(
-                ["pkill", "-f", "pytest.*stagehand"], check=False, timeout=2
-            )
+            subprocess.run(["pkill", "-f", "chrome.*stagehand"], check=False, timeout=2)
+            subprocess.run(["pkill", "-f", "pytest.*stagehand"], check=False, timeout=2)
         except (subprocess.TimeoutExpired, subprocess.SubprocessError, OSError):
             pass
-
 
