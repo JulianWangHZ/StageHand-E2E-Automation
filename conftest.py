@@ -151,14 +151,16 @@ async def stagehand_on_demand(request) -> AsyncGenerator[Stagehand, None]:
 
 
 def pytest_sessionfinish(session, exitstatus):
-    try:
-        subprocess.run(["pkill", "-f", "stagehand_ctx"], check=False, timeout=5)
-        subprocess.run(["pkill", "-f", "chromium.*stagehand"], check=False, timeout=5)
-        subprocess.run(["pkill", "-f", "chrome.*stagehand"], check=False, timeout=5)
-        subprocess.run(["pkill", "-f", "pytest.*stagehand"], check=False, timeout=5)
-
-        time.sleep(1)
-    except (subprocess.TimeoutExpired, subprocess.SubprocessError, OSError):
-        pass
+    # Only run cleanup in the main process, not in worker processes
+    worker_id = os.environ.get("PYTEST_XDIST_WORKER", "main")
+    if worker_id == "main":
+        try:
+            subprocess.run(["pkill", "-f", "stagehand_ctx"], check=False, timeout=5)
+            subprocess.run(["pkill", "-f", "chromium.*stagehand"], check=False, timeout=5)
+            subprocess.run(["pkill", "-f", "chrome.*stagehand"], check=False, timeout=5)
+            subprocess.run(["pkill", "-f", "pytest.*stagehand"], check=False, timeout=5)
+            time.sleep(1)
+        except (subprocess.TimeoutExpired, subprocess.SubprocessError, OSError):
+            pass
 
     sys.exit(exitstatus)
