@@ -164,4 +164,3 @@ def pytest_sessionfinish(session, exitstatus):
             subprocess.run(["pkill", "-f", "pytest.*stagehand"], check=False, timeout=2)
         except (subprocess.TimeoutExpired, subprocess.SubprocessError, OSError):
             pass
-

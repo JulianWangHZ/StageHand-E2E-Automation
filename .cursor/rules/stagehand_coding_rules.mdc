@@ -98,32 +98,40 @@ from config.devices import get_device_class
   - Line length: 100 characters (default)
   - Uses double quotes by default
   - Automatically handles spacing, indentation, and line breaks
-- **Black Formatting Rules**:
-  - **Long lines**: If a line exceeds 100 characters, Black will automatically split it
-  - **Function calls**: Long function calls should be split across multiple lines:
+- **Black Formatting Rules** (CRITICAL - Must Follow When Generating Code):
+  - **Line length limit**: Maximum 100 characters per line
+  - **MANDATORY CHECK**: Before writing any line of code, count the characters. If a line exceeds 100 characters, you MUST split it immediately
+  - **Function calls**: If a function call exceeds 100 characters, split it:
     ```python
-    # Good - Black will format this way
+    # Good - Split when line exceeds 100 chars
     subprocess.run(
         ["pkill", "-f", "chromium.*stagehand"], check=False, timeout=5
     )
     
-    # Bad - single long line (will be reformatted by Black)
+    # Bad - Single line exceeds 100 chars (will fail Black check)
     subprocess.run(["pkill", "-f", "chromium.*stagehand"], check=False, timeout=5)
+    
+    # Good - Short line (under 100 chars) can stay on one line
+    subprocess.run(["pkill", "-f", "stagehand_ctx"], check=False, timeout=2)
     ```
-  - **Method chaining**: Long method chains should be split:
+  - **Method chaining**: Long method chains must be split:
     ```python
-    # Good
+    # Good - Split when over 100 chars
     result = await base_actions.verify_element_visible(
         language_text_locator
     )
     ```
-  - **String concatenation**: Long strings should be split appropriately
-  - **Always let Black format**: Don't manually format - let Black handle it automatically
+  - **String concatenation**: Long strings must be split appropriately
+  - **File endings**: Files must end with exactly one blank line (not zero, not two)
+  - **When generating code**: 
+    - **ALWAYS** check line length before writing
+    - If a line is 90+ characters, proactively split it
+    - Count characters including spaces and indentation
+    - When in doubt, split the line - Black will reformat if needed
 - **Before Committing**:
   - Always run `black .` to format all files
   - Or use `black --check .` to verify formatting
   - CI will fail if code is not properly formatted
-  - **When generating code**: If a line is close to 100 characters, consider splitting it proactively to avoid Black reformatting
 
 #### Import Sorting (isort)
 - Use `isort` to sort imports automatically
@@ -533,15 +541,26 @@ async def navigate_homepage(...):
 ## Summary
 
 1. **Follow PEP 8** for code style and formatting
-2. **Use Black** to format all code before committing (required for CI)
-3. **Apply SOLID principles** for maintainable code structure
-4. **Use DRY principle** - extract common code to BaseActions
-5. **Use BaseActions** for standard Playwright operations
-6. **Use Stagehand's `act()`** for natural language actions
-7. **Verify page content**, not just URL changes
-8. **Write independent tests** that can run in any order
-9. **Use descriptive names** - no abbreviations or prefixes
-10. **Keep functions small** and focused on single responsibility
-11. **Document complex logic** with comments and docstrings
-12. **Run formatting tools** (Black, isort, flake8) before committing
+2. **CRITICAL: Check line length** - Every line must be ≤ 100 characters. Split long lines immediately when generating code
+3. **Use Black** to format all code before committing (required for CI)
+4. **Apply SOLID principles** for maintainable code structure
+5. **Use DRY principle** - extract common code to BaseActions
+6. **Use BaseActions** for standard Playwright operations
+7. **Use Stagehand's `act()`** for natural language actions
+8. **Verify page content**, not just URL changes
+9. **Write independent tests** that can run in any order
+10. **Use descriptive names** - no abbreviations or prefixes
+11. **Keep functions small** and focused on single responsibility
+12. **Document complex logic** with comments and docstrings
+13. **Run formatting tools** (Black, isort, flake8) before committing
+
+## Code Generation Checklist
+
+When generating or editing code, ALWAYS:
+
+- [ ] **Check line length**: Count characters - if > 100, split the line
+- [ ] **File endings**: Ensure file ends with exactly one blank line
+- [ ] **Function calls**: Split if total length > 100 characters
+- [ ] **Imports**: Follow import order (stdlib, third-party, local)
+- [ ] **Format with Black**: Run `black --check .` to verify before committing
 
