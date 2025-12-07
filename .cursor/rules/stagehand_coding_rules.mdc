@@ -98,10 +98,32 @@ from config.devices import get_device_class
   - Line length: 100 characters (default)
   - Uses double quotes by default
   - Automatically handles spacing, indentation, and line breaks
+- **Black Formatting Rules**:
+  - **Long lines**: If a line exceeds 100 characters, Black will automatically split it
+  - **Function calls**: Long function calls should be split across multiple lines:
+    ```python
+    # Good - Black will format this way
+    subprocess.run(
+        ["pkill", "-f", "chromium.*stagehand"], check=False, timeout=5
+    )
+    
+    # Bad - single long line (will be reformatted by Black)
+    subprocess.run(["pkill", "-f", "chromium.*stagehand"], check=False, timeout=5)
+    ```
+  - **Method chaining**: Long method chains should be split:
+    ```python
+    # Good
+    result = await base_actions.verify_element_visible(
+        language_text_locator
+    )
+    ```
+  - **String concatenation**: Long strings should be split appropriately
+  - **Always let Black format**: Don't manually format - let Black handle it automatically
 - **Before Committing**:
   - Always run `black .` to format all files
   - Or use `black --check .` to verify formatting
   - CI will fail if code is not properly formatted
+  - **When generating code**: If a line is close to 100 characters, consider splitting it proactively to avoid Black reformatting
 
 #### Import Sorting (isort)
 - Use `isort` to sort imports automatically
