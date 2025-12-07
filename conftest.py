@@ -7,7 +7,7 @@ import random
 import shutil
 import tempfile
 import warnings
-from typing import Generator
+from typing import AsyncGenerator
 
 import pytest
 from dotenv import load_dotenv
@@ -57,7 +57,7 @@ def pytest_addoption(parser):
 
 
 @pytest.fixture(scope="function")
-async def stagehand_on_demand(request) -> Generator[Stagehand, None, None]:
+async def stagehand_on_demand(request) -> AsyncGenerator[Stagehand, None]:
     device_type = request.config.getoption("--device", default="desktop")
     device_instance = get_device_class(device_type)
 
