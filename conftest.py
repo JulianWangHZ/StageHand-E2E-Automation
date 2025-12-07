@@ -149,6 +149,7 @@ async def stagehand_on_demand(request) -> AsyncGenerator[Stagehand, None]:
                 pass
             await asyncio.sleep(1)
 
+
 def pytest_sessionfinish(session, exitstatus):
     try:
         subprocess.run(["pkill", "-f", "stagehand_ctx"], check=False, timeout=5)
@@ -159,5 +160,5 @@ def pytest_sessionfinish(session, exitstatus):
         time.sleep(1)
     except (subprocess.TimeoutExpired, subprocess.SubprocessError, OSError):
         pass
-    
+
     sys.exit(exitstatus)
