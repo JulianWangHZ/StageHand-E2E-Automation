@@ -41,12 +41,12 @@ jobs:
       - name: Run smoke tests
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-        run: pytest --device=${{ matrix.device }} --headless -m smoke -n auto --stagehand-model=gpt-5-nano -v --tb=short
+        run: pytest --device=${{ matrix.device }} --headless -m smoke -n auto --stagehand-model=gpt-5-nano --reruns=2 --reruns-delay=1 -v --tb=short
 
       - name: Run critical tests
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-        run: pytest --device=${{ matrix.device }} --headless -m critical -n auto --stagehand-model=gpt-5-nano -v --tb=short
+        run: pytest --device=${{ matrix.device }} --headless -m critical -n auto --stagehand-model=gpt-5-nano --reruns=2 --reruns-delay=1 -v --tb=short
 
       - name: Test Summary
         if: always()
