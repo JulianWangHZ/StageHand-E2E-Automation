@@ -3,7 +3,6 @@ import os
 import random
 import shutil
 import subprocess
-import sys
 import tempfile
 import time
 import warnings
@@ -151,6 +150,12 @@ async def stagehand_on_demand(request) -> AsyncGenerator[Stagehand, None]:
 
 
 def pytest_sessionfinish(session, exitstatus):
+    # Only run cleanup locally, skip in CI environment
+    # CI environments are fresh each run and auto-cleanup after job completion
+    if os.environ.get("CI") or os.environ.get("GITHUB_ACTIONS"):
+        return
+
+    # Local cleanup - kill lingering browser processes
     worker_id = os.environ.get("PYTEST_XDIST_WORKER")
     if worker_id is None:
         try:
@@ -160,9 +165,6 @@ def pytest_sessionfinish(session, exitstatus):
             )
             subprocess.run(
                 ["pkill", "-f", "chrome.*stagehand"], check=False, timeout=5
-            )
-            subprocess.run(
-                ["pkill", "-f", "pytest.*stagehand"], check=False, timeout=5
             )
             time.sleep(1)
         except (subprocess.TimeoutExpired, subprocess.SubprocessError, OSError):
