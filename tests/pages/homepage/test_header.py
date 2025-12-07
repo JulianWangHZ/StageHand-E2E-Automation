@@ -37,10 +37,10 @@ async def logo_visible_visibility(stagehand_on_demand: Stagehand):
 @then("the logo should link to the homepage URL")
 async def logo_links_homepage_visibility(stagehand_on_demand: Stagehand):
     page = stagehand_on_demand.page
-    logo_link = page.locator('a[href="https://www.transglobalus.com/"]').filter(
-        has=page.locator("img")
-    )
-    await logo_link.wait_for(state="visible", timeout=5000)
+    base_actions = BaseActions(page)
+    logo_locator = 'a[href="https://www.transglobalus.com/"]'
+    await base_actions.wait_for_element_visible(logo_locator, timeout=5)
+    logo_link = page.locator(logo_locator).filter(has=page.locator("img"))
     href = await logo_link.get_attribute("href")
     assert href == "https://www.transglobalus.com/"
 
@@ -147,8 +147,10 @@ async def phone_link_visible_visibility(stagehand_on_demand: Stagehand):
 @then("it should be clickable")
 async def phone_link_clickable_visibility(stagehand_on_demand: Stagehand):
     page = stagehand_on_demand.page
-    phone_link = page.locator('a[href^="tel:"]').first()
-    await phone_link.wait_for(state="visible", timeout=5000)
+    base_actions = BaseActions(page)
+    phone_locator = 'a[href^="tel:"]'
+    await base_actions.wait_for_element_visible(phone_locator, timeout=5)
+    phone_link = page.locator(phone_locator).first()
     href = await phone_link.get_attribute("href")
     assert href and href.startswith("tel:")
 
@@ -453,22 +455,23 @@ async def click_language_selector(stagehand_on_demand: Stagehand):
 @then("I should see the language dropdown menu")
 async def see_language_dropdown(stagehand_on_demand: Stagehand):
     page = stagehand_on_demand.page
-    await page.wait_for_timeout(500)
-    dropdown = page.locator('#pll_switcher, .pll-switcher, [class*="language"]')
-    assert (
-        await dropdown.count() > 0
-        or await page.locator("text=中文, text=English").count() > 0
-    )
+    base_actions = BaseActions(page, default_timeout=3)
+    dropdown_locator = '#pll_switcher, .pll-switcher, [class*="language"]'
+    dropdown_visible = await base_actions.verify_element_visible(dropdown_locator)
+    if not dropdown_visible:
+        # Fallback to text-based locator
+        language_text_locator = "text=中文, text=English"
+        dropdown_visible = await base_actions.verify_element_visible(language_text_locator)
+    assert dropdown_visible
 
 
 @then("I should see language options in the dropdown")
 async def see_language_options(stagehand_on_demand: Stagehand):
     page = stagehand_on_demand.page
-    await page.wait_for_timeout(500)
-    language_options = page.locator(
-        "text=中文, text=English, text=繁體中文, text=简体中文"
-    )
-    assert await language_options.count() > 0
+    base_actions = BaseActions(page, default_timeout=3)
+    language_options_locator = "text=中文, text=English, text=繁體中文, text=简体中文"
+    is_visible = await base_actions.verify_element_visible(language_options_locator)
+    assert is_visible
 
 
 # ============================================================================
@@ -494,15 +497,16 @@ async def hover_click_services_menu(stagehand_on_demand: Stagehand, menu_item: s
 @then("I should see the dropdown menu")
 async def see_dropdown_menu_services(stagehand_on_demand: Stagehand):
     page = stagehand_on_demand.page
-    await page.wait_for_timeout(500)
-    dropdown = page.locator('.sub-menu, .dropdown-menu, [class*="submenu"]')
-    assert await dropdown.count() > 0
+    base_actions = BaseActions(page, default_timeout=3)
+    dropdown_locator = '.sub-menu, .dropdown-menu, [class*="submenu"]'
+    is_visible = await base_actions.verify_element_visible(dropdown_locator)
+    assert is_visible
 
 
 @then(parsers.parse('I should see "{item}" in the dropdown'))
 async def see_item_in_dropdown_services(stagehand_on_demand: Stagehand, item: str):
     page = stagehand_on_demand.page
-    await page.wait_for_timeout(500)
-    dropdown_item = page.locator(f"text={item}").first()
-    await dropdown_item.wait_for(state="visible", timeout=5000)
-    assert await dropdown_item.is_visible()
+    base_actions = BaseActions(page, default_timeout=3)
+    item_locator = f"text={item}"
+    is_visible = await base_actions.verify_element_visible(item_locator)
+    assert is_visible
