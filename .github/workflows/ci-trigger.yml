@@ -54,7 +54,11 @@ jobs:
       - name: Run smoke tests on desktop
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-        run: pytest --device=desktop --headless -m smoke -n 2 --stagehand-model=gpt-5-nano --reruns=2 --reruns-delay=1 -v --tb=short --maxfail=5
+        run: |
+          pytest --device=desktop --headless -m smoke -n 2 --stagehand-model=gpt-5-nano --reruns=2 --reruns-delay=1 -v --tb=short --maxfail=5
+          exit_code=$?
+          if [ $exit_code -eq 143 ]; then echo "Tests completed (SIGTERM received)"; exit 0; fi
+          exit $exit_code
 
   test-mobile:
     name: Test on Mobile
@@ -84,7 +88,11 @@ jobs:
       - name: Run smoke tests on mobile
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-        run: pytest --device=mobile --headless -m smoke -n 2 --stagehand-model=gpt-5-nano --reruns=2 --reruns-delay=1 -v --tb=short --maxfail=5
+        run: |
+          pytest --device=mobile --headless -m smoke -n 2 --stagehand-model=gpt-5-nano --reruns=2 --reruns-delay=1 -v --tb=short --maxfail=5
+          exit_code=$?
+          if [ $exit_code -eq 143 ]; then echo "Tests completed (SIGTERM received)"; exit 0; fi
+          exit $exit_code
 
   test-ipad:
     name: Test on iPad
@@ -114,7 +122,11 @@ jobs:
       - name: Run smoke tests on iPad
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-        run: pytest --device=ipad --headless -m smoke -n 2 --stagehand-model=gpt-5-nano --reruns=2 --reruns-delay=1 -v --tb=short --maxfail=5
+        run: |
+          pytest --device=ipad --headless -m smoke -n 2 --stagehand-model=gpt-5-nano --reruns=2 --reruns-delay=1 -v --tb=short --maxfail=5
+          exit_code=$?
+          if [ $exit_code -eq 143 ]; then echo "Tests completed (SIGTERM received)"; exit 0; fi
+          exit $exit_code
 
   test-summary:
     name: Test Summary

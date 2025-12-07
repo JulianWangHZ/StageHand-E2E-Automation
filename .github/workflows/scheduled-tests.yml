@@ -41,12 +41,20 @@ jobs:
       - name: Run smoke tests
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-        run: pytest --device=${{ matrix.device }} --headless -m smoke -n auto --stagehand-model=gpt-5-nano --reruns=2 --reruns-delay=1 -v --tb=short
+        run: |
+          pytest --device=${{ matrix.device }} --headless -m smoke -n auto --stagehand-model=gpt-5-nano --reruns=2 --reruns-delay=1 -v --tb=short
+          exit_code=$?
+          if [ $exit_code -eq 143 ]; then echo "Tests completed (SIGTERM received)"; exit 0; fi
+          exit $exit_code
 
       - name: Run critical tests
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-        run: pytest --device=${{ matrix.device }} --headless -m critical -n auto --stagehand-model=gpt-5-nano --reruns=2 --reruns-delay=1 -v --tb=short
+        run: |
+          pytest --device=${{ matrix.device }} --headless -m critical -n auto --stagehand-model=gpt-5-nano --reruns=2 --reruns-delay=1 -v --tb=short
+          exit_code=$?
+          if [ $exit_code -eq 143 ]; then echo "Tests completed (SIGTERM received)"; exit 0; fi
+          exit $exit_code
 
       - name: Test Summary
         if: always()

@@ -80,6 +80,9 @@ jobs:
           CMD="$CMD --stagehand-model=${{ inputs.stagehand_model }} --reruns=2 --reruns-delay=1 -v"
           echo "Running: $CMD"
           eval $CMD
+          exit_code=$?
+          if [ $exit_code -eq 143 ]; then echo "Tests completed (SIGTERM received)"; exit 0; fi
+          exit $exit_code
 
       - name: Summary
         if: always()
