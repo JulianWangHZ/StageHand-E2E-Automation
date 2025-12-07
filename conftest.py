@@ -156,7 +156,9 @@ def pytest_sessionfinish(session, exitstatus):
     if worker_id == "main":
         try:
             subprocess.run(["pkill", "-f", "stagehand_ctx"], check=False, timeout=5)
-            subprocess.run(["pkill", "-f", "chromium.*stagehand"], check=False, timeout=5)
+            subprocess.run(
+                ["pkill", "-f", "chromium.*stagehand"], check=False, timeout=5
+            )
             subprocess.run(["pkill", "-f", "chrome.*stagehand"], check=False, timeout=5)
             subprocess.run(["pkill", "-f", "pytest.*stagehand"], check=False, timeout=5)
             time.sleep(1)
