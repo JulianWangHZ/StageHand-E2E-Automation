@@ -152,15 +152,29 @@ async def stagehand_on_demand(request) -> AsyncGenerator[Stagehand, None]:
 
 def pytest_sessionfinish(session, exitstatus):
     # Only run cleanup in the main process, not in worker processes
+    # Use non-blocking cleanup to avoid termination issues
     worker_id = os.environ.get("PYTEST_XDIST_WORKER", "main")
     if worker_id == "main":
         try:
-            # Use shorter timeout and ignore errors to avoid blocking
-            subprocess.run(["pkill", "-f", "stagehand_ctx"], check=False, timeout=2)
-            subprocess.run(
-                ["pkill", "-f", "chromium.*stagehand"], check=False, timeout=2
+            subprocess.Popen(
+                ["pkill", "-f", "stagehand_ctx"],
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
             )
-            subprocess.run(["pkill", "-f", "chrome.*stagehand"], check=False, timeout=2)
-            subprocess.run(["pkill", "-f", "pytest.*stagehand"], check=False, timeout=2)
-        except (subprocess.TimeoutExpired, subprocess.SubprocessError, OSError):
+            subprocess.Popen(
+                ["pkill", "-f", "chromium.*stagehand"],
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+            )
+            subprocess.Popen(
+                ["pkill", "-f", "chrome.*stagehand"],
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+            )
+            subprocess.Popen(
+                ["pkill", "-f", "pytest.*stagehand"],
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+            )
+        except (subprocess.SubprocessError, OSError):
             pass
