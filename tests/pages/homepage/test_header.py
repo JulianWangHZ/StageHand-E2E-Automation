@@ -461,7 +461,9 @@ async def see_language_dropdown(stagehand_on_demand: Stagehand):
     if not dropdown_visible:
         # Fallback to text-based locator
         language_text_locator = "text=中文, text=English"
-        dropdown_visible = await base_actions.verify_element_visible(language_text_locator)
+        dropdown_visible = await base_actions.verify_element_visible(
+            language_text_locator
+        )
     assert dropdown_visible
 
 

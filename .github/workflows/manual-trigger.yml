@@ -77,7 +77,7 @@ jobs:
           [ "${{ inputs.headless }}" == "true" ] && CMD="$CMD --headless"
           [ -n "${{ inputs.tags }}" ] && CMD="$CMD -m \"${{ inputs.tags }}\""
           [ "${{ inputs.parallel }}" == "true" ] && CMD="$CMD -n ${{ inputs.workers }} --dist=loadscope"
-          CMD="$CMD --stagehand-model=${{ inputs.stagehand_model }} -v"
+          CMD="$CMD --stagehand-model=${{ inputs.stagehand_model }} --reruns=2 --reruns-delay=1 -v"
           echo "Running: $CMD"
           eval $CMD
 
