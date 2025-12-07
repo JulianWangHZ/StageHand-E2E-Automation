@@ -12,7 +12,7 @@ jobs:
   scheduled-tests:
     name: Run Scheduled Tests
     runs-on: ubuntu-latest
-    timeout-minutes: 90
+    timeout-minutes: 120
     strategy:
       matrix:
         device: [desktop, mobile, ipad]

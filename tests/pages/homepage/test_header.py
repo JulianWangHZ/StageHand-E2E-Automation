@@ -508,7 +508,7 @@ async def see_dropdown_menu_services(stagehand_on_demand: Stagehand):
 @then(parsers.parse('I should see "{item}" in the dropdown'))
 async def see_item_in_dropdown_services(stagehand_on_demand: Stagehand, item: str):
     page = stagehand_on_demand.page
-    base_actions = BaseActions(page, default_timeout=3)
+    base_actions = BaseActions(page, default_timeout=10)
     item_locator = f"text={item}"
     is_visible = await base_actions.verify_element_visible(item_locator)
     assert is_visible

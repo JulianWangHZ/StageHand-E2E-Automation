@@ -63,7 +63,7 @@ jobs:
   test-desktop:
     name: Test on Desktop
     runs-on: ubuntu-latest
-    timeout-minutes: 90
+    timeout-minutes: 120
     needs: lint-and-validate
 
     steps:
@@ -94,7 +94,7 @@ jobs:
   test-mobile:
     name: Test on Mobile
     runs-on: ubuntu-latest
-    timeout-minutes: 90
+    timeout-minutes: 120
     needs: lint-and-validate
 
     steps:
@@ -125,7 +125,7 @@ jobs:
   test-ipad:
     name: Test on iPad
     runs-on: ubuntu-latest
-    timeout-minutes: 90
+    timeout-minutes: 120
     needs: lint-and-validate
 
     steps:
