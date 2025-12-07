@@ -1,4 +1,7 @@
 import asyncio
+import subprocess
+import time
+import sys
 import os
 import random
 import shutil
@@ -145,3 +148,16 @@ async def stagehand_on_demand(request) -> Generator[Stagehand, None, None]:
             except OSError:
                 pass
             await asyncio.sleep(1)
+
+def pytest_sessionfinish(session, exitstatus):
+    try:
+        subprocess.run(["pkill", "-f", "stagehand_ctx"], check=False, timeout=5)
+        subprocess.run(["pkill", "-f", "chromium.*stagehand"], check=False, timeout=5)
+        subprocess.run(["pkill", "-f", "chrome.*stagehand"], check=False, timeout=5)
+        subprocess.run(["pkill", "-f", "pytest.*stagehand"], check=False, timeout=5)
+
+        time.sleep(1)
+    except (subprocess.TimeoutExpired, subprocess.SubprocessError, OSError):
+        pass
+    
+    sys.exit(exitstatus)
